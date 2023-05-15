@@ -1,78 +1,130 @@
-from queue import PriorityQueue
+class Node():
+    """A Node class for A* Pathfinding"""
+    # Constructor for Node class.
+    def __init__(self, parent=None, position=None):
+        self.parent = parent
+        self.position = position
 
-def a_star_search(graph, start_node, goal_node, heuristic, cost):
-    queue = PriorityQueue()
-    visited = set()
-    g_score = {node: float('inf') for node in graph}
-    g_score[start_node] = 0
-    f_score = {node: float('inf') for node in graph}
-    f_score[start_node] = heuristic[start_node]
+        self.g = self.h = self.f = 0
+    # Comparator for Node class
+    def __eq__(self, temp):
+        return self.position == temp.position
 
-    # Add the start node to the queue with its f-score
-    queue.put((f_score[start_node], start_node))
+# Boolean function to check if 
+# a move is valid or not.
+def notValid(nodePosition,n,m):
+    return nodePosition[0] > n-1 or nodePosition[0] < 0 \
+    or nodePosition[1] > m-1 or nodePosition[1] < 0
 
-    while not queue.empty():
-        _, current_node = queue.get()
+# A* algorithm function
+def A_Star(board, src, dest):
+    """This function returns a list of
+    tuples representing the path from the given 
+    src node to the given dest node in the given board"""
+    # Creating the src and dest node
+    # with parent as None.
+    srcNode = Node(None, src)
+    destNode = Node(None, dest)
+    
 
-        # Check if the current node is the goal node
-        if current_node == goal_node:
-            return True
+    # Initializing both openList and 
+    # closedList as empty list.
+    openList = []
+    closedList = []
 
-        # Mark the current node as visited
-        visited.add(current_node)
+    # Append srcNode in openList. 
+    openList.append(srcNode)
 
-        # Process each neighbor of the current node
-        neighbors = graph[current_node]
-        for neighbor in neighbors:
-            if neighbor in visited:
+    # Iterate until we reach the 
+    # dest Node. 
+    while len(openList) > 0:
+
+        # Get the current node
+        currentNode = openList[0]
+        currentIndex = 0
+        # Iterate over the openList to find 
+        # node with least 'f'. 
+        for index, item in enumerate(openList):
+            if item.f < currentNode.f:
+                currentNode = item
+                currentIndex = index
+
+        # Pop the found node off openList,
+        # and add it to the closedList. 
+        openList.pop(currentIndex)
+        closedList.append(currentNode)
+
+        # If reached the dest.
+        if currentNode == destNode:
+            # Initializng the 'path' list. 
+            path = []
+            current = currentNode
+            # Adding currentposition in path 
+            # and the moving to its parent until 
+            # we reach None (parent of src). 
+            while current is not None:
+                path.append(current.position)
+                current = current.parent
+            # Returning the reversed path (to make
+            # it src -> dest, instead of dest -> src.
+            return path[::-1] 
+
+        # Generate children
+        children = []
+        dirs=((0, -1), (0, 1), (-1, 0), (1, 0),
+        (-1, -1), (-1, 1), (1, -1), (1, 1))
+        # Iterate over neighouring cells.
+        for newPosition in dirs: 
+
+            # Find the position of new Node.
+            nodePosition = (currentNode.position[0] + newPosition[0], 
+            currentNode.position[1] + newPosition[1])
+
+            # If the new position is not valid (lies outside the board)
+            # then do not proceed ahead with this node.
+            if(notValid(nodePosition,len(board),
+            len(board[len(board)-1]))==True):
                 continue
+            # Also if the new position contains obstacle, 
+            # we can't go ahead.
+            if (board[nodePosition[0]][nodePosition[1]] != 0):
+                continue
+            # Append the node in children list.
+            children.append(Node(currentNode, nodePosition))
 
-            # Calculate the tentative g-score for the neighbor
-            tentative_g_score = g_score[current_node] + cost[current_node][neighbor]
+        # Iterate over children list.
+        for child in children:
+            
+            # If the child is in closedList
+            for closedChild in closedList:
+                if closedChild == child:
+                    continue
+            
+            # Assign the values of f, g, and h.
+            child.g = currentNode.g + 1
+            child.h = ((child.position[0] - destNode.position[0]) ** 2) \
+            + ((child.position[1] - destNode.position[1]) ** 2)
+            child.f = child.g + child.h
 
-            if tentative_g_score < g_score[neighbor]:
-                # Update the g-score and f-score for the neighbor
-                g_score[neighbor] = tentative_g_score
-                f_score[neighbor] = g_score[neighbor] + heuristic[neighbor]
-                queue.put((f_score[neighbor], neighbor))
+            # If the Child is present in OpenList. 
+            for openNode in openList:
+                if child == openNode and child.g > openNode.g:
+                    continue
 
-    # Goal node not found
-    return False
+            # Append the child at the last of open list
+            openList.append(child)
+        if (len(openList) > len(board)**2*len(board[0])**2): 
+            return None
 
-# Example usage
-graph = {
-    'A': {'B': 5, 'C': 3},
-    'B': {'D': 2, 'E': 4},
-    'C': {'F': 6},
-    'D': {},
-    'E': {'F': 1},
-    'F': {}
-}
+if __name__ == '__main__':
+    board = [
+                [0, 0, 0, 1, 0, 0],
+                [0, 0, 1, 0, 1, 0],                
+                [1, 0, 1, 0, 0, 0]
+            ]
 
-start_node = 'A'
-goal_node = 'F'
+    src = (1, 0)
+    dest = (2, 5)
 
-heuristic = {
-    'A': 4,
-    'B': 3,
-    'C': 2,
-    'D': 5,
-    'E': 2,
-    'F': 0
-}
-
-cost = {
-    'A': {'B': 5, 'C': 3},
-    'B': {'D': 2, 'E': 4},
-    'C': {'F': 6},
-    'D': {},
-    'E': {'F': 1},
-    'F': {}
-}
-
-found = a_star_search(graph, start_node, goal_node, heuristic, cost)
-
-if found:
-    print("Goal node found!")
-else:
-    print("Goal node not found.")
+    pathSrcToDest = A_Star(board, src, dest)
+    print(pathSrcToDest)
