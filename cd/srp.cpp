@@ -1,69 +1,97 @@
-#include <iostream>
-#include <string.h>
-
+#include <bits/stdc++.h>
 using namespace std;
-
-struct prodn {
-  char p1[10];
-  char p2[10];
-};
-
-int main() {
-  printf("Drish RA2011030030026\n");
-  char input[20], stack[50] = "", temp[50], ch[2], *t1, *t2, *t;
-  int i, j, s1, s2, s, count = 0;
-  struct prodn p[10];
-
-  cout << "Enter the productions (one per line, format: LHS->RHS):\n";
-  while (true) {
-    cin.getline(temp, 50);
-    if (strlen(temp) == 0) {
-      break;
+int k = 0, z = 0, i = 0, j = 0, c = 0;
+char a[16], ac[20], stk[15], act[10];
+void check();
+int main()
+{
+  printf("GRAMMAR is \n E->E+E \n E->E*E \n E->(E) \n E->id");
+  printf("\n\nEnter input string ");
+  scanf("%s", a);
+  c = strlen(a);
+  strcpy(act, "SHIFT->");
+  printf("STACK \t INPUT \tCOMMENT");
+  printf("$ \t%s$\n", a);
+  for (k = 0, i = 0; j < c; k++, i++, j++)
+  {
+    if (a[j] == 'i' && a[j + 1] == 'd')
+    {
+      stk[i] = a[j];
+      stk[i + 1] = a[j + 1];
+      stk[i + 2] = '\0';
+      a[j] = ' ';
+      a[j + 1] = ' ';
+      printf("\n$%s\t%s$\t%sid", stk, a, act);
+      check();
     }
-    t1 = strtok(temp, "->");
-    t2 = strtok(NULL, "->");
-    strcpy(p[count].p1, t1);
-    strcpy(p[count].p2, t2);
-    count++;
-  }
-
-  cout << "\nEnter the Input String:\n";
-  cin >> input;
-
-  i = 0;
-  while (true) {
-    if (i < strlen(input)) {
-      ch[0] = input[i];
-      ch[1] = '\0';
-      i++;
-      strcat(stack, ch);
-      cout << "\n"
-           << stack;
-    }
-
-    for (j = 0; j < count; j++) {
-      t = strstr(stack, p[j].p2);
-      if (t != NULL) {
-        s1 = strlen(stack);
-        s2 = strlen(t);
-        s = s1 - s2;
-        stack[s] = '\0';
-        strcat(stack, p[j].p1);
-        cout << "\n"
-             << stack;
-        j = -1;
-      }
-    }
-
-    if (strcmp(stack, "E") == 0 && i == strlen(input)) {
-      cout << "\n\nAccepted";
-      break;
-    }
-    if (i == strlen(input)) {
-      cout << "\n\nNot Accepted";
-      break;
+    else
+    {
+      stk[i] = a[j];
+      stk[i + 1] = '\0';
+      a[j] = ' ';
+      printf("\n$%s\t%s$\t%ssymbols", stk, a, act);
+      check();
     }
   }
-
-  return 0;
 }
+void check()
+{
+  strcpy(ac, "REDUCE TO E");
+  for (z = 0; z < c; z++)
+    if (stk[z] == 'i' && stk[z + 1] == 'd')
+    {
+      stk[z] = 'E';
+      stk[z + 1] = '\0';
+      printf("\n$%s\t%s$\t%s", stk, a, ac);
+      j++;
+    }
+  for (z = 0; z < c; z++)
+    if (stk[z] == 'E' && stk[z + 1] == '+' && stk[z + 2] == 'E')
+    {
+      stk[z] = 'E';
+      stk[z + 1] = '\0';
+      stk[z + 2] = '\0';
+      printf("\n$%s\t%s$\t%s", stk, a, ac);
+      i = i - 2;
+    }
+  for (z = 0; z < c; z++)
+    if (stk[z] == 'E' && stk[z + 1] == '*' && stk[z + 2] == 'E')
+    {
+      stk[z] = 'E';
+      stk[z + 1] = '\0';
+      stk[z + 1] = '\0';
+      printf("\n$%s\t%s$\t%s", stk, a, ac);
+      i = i - 2;
+    }
+  for (z = 0; z < c; z++)
+    if (stk[z] == '(' && stk[z + 1] == 'E' && stk[z + 2] == ')')
+    {
+      stk[z] = 'E';
+      stk[z + 1] = '\0';
+      stk[z + 1] = '\0';
+      printf("\n$%s\t%s$\t%s", stk, a, ac);
+      i = i - 2;
+    }
+}
+
+
+
+// Output
+
+// GRAMMAR is
+// E->E+E
+// E->E*E
+// E->(E)
+// E->id
+// Enter input string id+id*id
+// STACK INPUT COMMENT$ id+id*id$
+// $id +id*id$ SHIFT->id
+// $E +id*id$ REDUCE TO E
+// $E+ id*id$ SHIFT->symbols
+// $E+id *id$ SHIFT->id
+// $E+E *id$ REDUCE TO E
+// $E *id$ REDUCE TO E
+// $E* id$ SHIFT->symbols
+// $E*id $ SHIFT->id
+// $E*E $ REDUCE TO E
+// $E $ REDUCE TO E

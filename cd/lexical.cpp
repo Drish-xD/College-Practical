@@ -67,3 +67,33 @@ bool isKeyword(string a) {
   }
   return false;
 }
+
+
+// OUTPUT
+
+// #include is an identifier
+// <stdio.h> is an identifier
+// void is a keyword
+// main is a keyword
+// ( is a symbol
+// ) is a symbol
+// { is a symbol
+// int is a keyword
+// x is an identifier
+// = is an operator
+// 6 is a constant
+// ; is a symbol
+// int is a keyword
+// y is an identifier
+// = is an operator
+// 4 is a constant
+// ; is a symbol
+// x is an identifier
+// = is an operator
+// x is an identifier
+// + is an operator
+// y is an identifier
+// ; is a symbol
+// printf("%d", is an identifier
+// x); is an identifier
+// } is a symbol
